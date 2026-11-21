@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐮 MooScore Rankings - BenchMoo</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-card-hover: #1e2a4a;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --text: #eaeaea;
+    --text-dim: #8a8a9a;
+    --green: #2ecc71;
+    --gold: #ffd700;
+    --silver: #c0c0c0;
+    --bronze: #cd7f32;
+    --cow-spot: #fff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Fundo com padrão de manchas de vaca */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 120px 80px at 10% 20%, rgba(255,255,255,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 80px 60px at 85% 35%, rgba(255,255,255,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 100px 70px at 50% 80%, rgba(255,255,255,0.02) 0%, transparent 70%),
+      radial-gradient(ellipse 60px 50px at 25% 65%, rgba(255,255,255,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 90px 70px at 75% 90%, rgba(255,255,255,0.02) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+
+  .logo {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  .logo .cow-icon {
+    -webkit-text-fill-color: initial;
+    font-size: 3rem;
+  }
+
+  .tagline {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 20px 0 30px;
+  }
+
+  .stat-pill {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+  }
+
+  .stat-pill .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    background: var(--bg-card);
+    border: 2px dashed rgba(233,69,96,0.4);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 30px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .upload-zone .big-icon { font-size: 3rem; margin-bottom: 10px; }
+  .upload-zone h3 { font-size: 1.2rem; margin-bottom: 6px; }
+  .upload-zone p { color: var(--text-dim); font-size: 0.9rem; }
+  .upload-zone .hint { font-size: 0.8rem; color: var(--text-dim); margin-top: 10px; }
+
+  .upload-zone input[type="file"] { display: none; }
+
+  /* Upload status */
+  .upload-status {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    min-height: 20px;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    background: rgba(233,69,96,0.15);
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+
+  tbody tr:hover { background: var(--bg-card-hover); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td { padding: 14px 12px; font-size: 0.9rem; vertical-align: middle; }
+
+  .rank {
+    font-size: 1.3rem;
+    font-weight: 900;
+    text-align: center;
+    width: 50px;
+  }
+
+  .rank.gold { color: var(--gold); }
+  .rank.silver { color: var(--silver); }
+  .rank.bronze { color: var(--bronze); }
+
+  .cow-name {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cow-name .emoji { font-size: 1.3rem; }
+
+  .score {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--accent2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .specs { color: var(--text-dim); font-size: 0.8rem; line-height: 1.5; }
+
+  .badge {
+    display: inline-block;
+    background: rgba(46,204,113,0.15);
+    color: var(--green);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .fps-val {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .vacas-val { font-variant-numeric: tabular-nums; }
+
+  /* Loading / empty */
+  .empty-state, .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .loading-state .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card);
+    border: 1px solid rgba(233,69,96,0.5);
+    color: var(--text);
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    max-width: 90vw;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--accent); }
+  .toast.success { border-color: var(--green); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 0 20px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+
+  footer .moo { color: var(--accent); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .logo { font-size: 2.2rem; }
+    .hide-mobile { display: none; }
+    td, th { padding: 10px 8px; }
+    .stats-bar { gap: 12px; }
+    .stat-pill { padding: 8px 14px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo"><span class="cow-icon">🐮</span> MooScore</div>
+    <div class="tagline">O ranking definitivo de benchmark bovino · inspirado no hwbot</div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-pill">🏆 <span>Recordes</span> <span class="num" id="stat-total">—</span></div>
+    <div class="stat-pill">👑 <span>Top MooScore</span> <span class="num" id="stat-top">—</span></div>
+    <div class="stat-pill">🐄 <span>Gargalo mais comum</span> <span class="num" id="stat-gargalo">—</span></div>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept=".json,application/json" multiple>
+    <div class="big-icon">📤</div>
+    <h3>Enviar pontuação</h3>
+    <p>Arraste o arquivo <strong>.json</strong> gerado pelo BenchMoo ou clique para selecionar</p>
+    <div class="hint">O arquivo <code>~/.benchmoo_best.json</code> ou um resultado exportado</div>
+    <div class="upload-status" id="uploadStatus"></div>
+  </div>
+
+  <!-- Ranking -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fazendeiro</th>
+          <th>MooScore</th>
+          <th class="hide-mobile">Vacas</th>
+          <th class="hide-mobile">FPS</th>
+          <th class="hide-mobile">Gargalo</th>
+          <th>Hardware</th>
+        </tr>
+      </thead>
+      <tbody id="rankingBody">
+        <tr><td colspan="7">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <div>Buscando pontuações no pasto...</div>
+          </div>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>🐮 <span class="moo">MooScore</span> · BenchMoo Benchmark · Feito com 🥛 e 💻</p>
+    <p style="margin-top:6px;">Pontuações armazenadas via <a href="https://npoint.io" target="_blank" style="color:var(--accent2);">npoint.io</a></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIGURAÇÃO DO NPOINT
+   ============================================================
+   1. Acesse https://npoint.io
+   2. Crie um novo endpoint com o conteúdo inicial:
+      { "scores": [] }
+   3. Copie o ID do endpoint (a parte depois de npoint.io/api/)
+   4. Cole abaixo em NPOINT_ID
+   ============================================================ */
+const NPOINT_ID = '28efdb27cdf0bb21651c';
+const NPOINT_URL = `https://api.npoint.io/${NPOINT_ID}`;
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+let scores = [];
+let loading = true;
+
+/* ============================================================
+   UTILITÁRIOS
+   ============================================================ */
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function formatNumber(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
+  return Math.round(n).toString();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+/* ============================================================
+   CARREGAR DO NPOINT
+   ============================================================ */
+async function loadScores() {
+  loading = true;
+  renderRanking();
+
+  try {
+    const res = await fetch(NPOINT_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // Aceita {scores: [...]} ou array direto
+    if (Array.isArray(data)) scores = data;
+    else if (data && Array.isArray(data.scores)) scores = data.scores;
+    else scores = [];
+
+    // Ordena por score decrescente
+    scores.sort((a, b) => (b.score || 0) - (a.score || 0));
+    loading = false;
+    renderRanking();
+    updateStats();
+  } catch (err) {
+    loading = false;
+    console.error('Erro ao carregar:', err);
+    document.getElementById('rankingBody').innerHTML = `
+      <tr><td colspan="7">
+        <div class="empty-state">
+          <div style="font-size:2.5rem;margin-bottom:10px;">🐄💤</div>
+          <div><strong>Não foi possível carregar o ranking.</strong></div>
+          <div style="margin-top:6px;font-size:0.85rem;">
+            Verifique o <code>NPOINT_ID</code> no código.<br>
+            Erro: ${escapeHtml(err.message)}
+          </div>
+        </div>
+      </td></tr>`;
+    toast('Erro ao carregar ranking do npoint', 'error');
+  }
+}
+
+/* ============================================================
+   RENDERIZAR RANKING
+   ============================================================ */
+function renderRanking() {
+  const tbody = document.getElementById('rankingBody');
+
+  if (loading) {
+    tbody.innerHTML = `<tr><td colspan="7">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <div>Buscando pontuações no pasto...</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  if (!scores.length) {
+    tbody.innerHTML = `<tr><td colspan="7">
+      <div class="empty-state">
+        <div style="font-size:2.5rem;margin-bottom:10px;">🐮</div>
+        <div><strong>Nenhuma pontuação ainda!</strong></div>
+        <div style="margin-top:6px;font-size:0.85rem;">Seja o primeiro a enviar seu MooScore.</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = scores.map((s, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+
+    return `<tr>
+      <td class="rank ${rankClass}">${rankIcon}</td>
+      <td>
+        <div class="cow-name">
+          <span class="emoji">🐄</span>
+          <span>${escapeHtml(s.name || 'Anônimo')}</span>
+        </div>
+      </td>
+      <td><span class="score">${formatNumber(s.score || 0)}</span></td>
+      <td class="hide-mobile vacas-val">${s.vacas ?? '—'}</td>
+      <td class="hide-mobile fps-val">${s.fps_medio != null ? s.fps_medio.toFixed(1) : '—'}</td>
+      <td class="hide-mobile">
+        ${s.gargalo ? `<span class="badge">${escapeHtml(s.gargalo)}</span>` : '—'}
+      </td>
+      <td class="specs">
+        ${s.cpu ? escapeHtml(s.cpu) + '<br>' : ''}
+        ${s.gpu ? '🎮 ' + escapeHtml(s.gpu) : ''}
+        ${s.ram ? '<br>🧠 ' + escapeHtml(s.ram) : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   ESTATÍSTICAS
+   ============================================================ */
+function updateStats() {
+  document.getElementById('stat-total').textContent = scores.length;
+  document.getElementById('stat-top').textContent =
+    scores.length ? formatNumber(scores[0].score || 0) : '—';
+
+  // Gargalo mais comum
+  const counts = {};
+  scores.forEach(s => {
+    if (s.gargalo) counts[s.gargalo] = (counts[s.gargalo] || 0) + 1;
+  });
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  document.getElementById('stat-gargalo').textContent = entries.length ? entries[0][0] : '—';
+}
+
+/* ============================================================
+   UPLOAD / PARSING
+   ============================================================ */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const uploadStatus = document.getElementById('uploadStatus');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+  handleFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+async function handleFiles(files) {
+  if (!files.length) return;
+  uploadStatus.textContent = '';
+
+  for (const file of Array.from(files)) {
+    if (!file.name.endsWith('.json')) {
+      uploadStatus.innerHTML = `<span style="color:var(--accent)">❌ ${escapeHtml(file.name)}: não é JSON</span>`;
+      continue;
+    }
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      uploadStatus.innerHTML = `<span style="color:var(--text-dim)">⏳ Processando ${escapeHtml(file.name)}...</span>`;
+      const entry = parseBenchMooFile(parsed);
+      await submitScore(entry, file.name);
+    } catch (err) {
+      console.error(err);
+      uploadStatus.innerHTML = `<span style="color:var(--accent)">❌ ${escapeHtml(file.name)}: ${escapeHtml(err.message)}</span>`;
+      toast('Erro ao processar ' + file.name, 'error');
+    }
+  }
+}
+
+/* ============================================================
+   PARSER DO BENCHMOO
+   ============================================================
+   A ferramenta BenchMoo salva em ~/.benchmoo_best.json:
+   {
+     "score": 12345,
+     "fps_medio": 987.6,
+     "vacas": 16,
+     "gargalo": "CPU"
+   }
+   Também aceita o objeto completo com metadados do sistema
+   caso o usuário edite/exporte manualmente.
+   ============================================================ */
+function parseBenchMooFile(data) {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Formato inválido');
+  }
+
+  // Extrai os campos essenciais
+  const score = Number(data.score);
+  if (!isFinite(score) || score <= 0) {
+    throw new Error('Campo "score" ausente ou inválido');
+  }
+
+  const entry = {
+    name: data.name || data.fazendeiro || 'Anônimo',
+    score: Math.round(score),
+    fps_medio: Number(data.fps_medio) || 0,
+    vacas: Number(data.vacas ?? data.pico_vacas) || 0,
+    gargalo: data.gargalo || '—',
+    cpu: data.cpu || '',
+    gpu: data.gpu || '',
+    ram: data.ram || '',
+    timestamp: new Date().toISOString(),
+    raw: data
+  };
+
+  // Tenta extrair metadados do sistema se existirem
+  if (data.sistema) {
+    entry.cpu = data.sistema.cpu || entry.cpu;
+    entry.gpu = data.sistema.gpu || entry.gpu;
+    entry.ram = data.sistema.ram || entry.ram;
+  }
+
+  return entry;
+}
+
+/* ============================================================
+   ENVIAR PARA O NPOINT
+   ============================================================ */
+async function submitScore(entry, filename) {
+  try {
+    // Busca estado atual
+    const res = await fetch(NPOINT_URL + '?t=' + Date.now());
+    let current;
+    if (res.ok) {
+      current = await res.json();
+    } else {
+      current = { scores: [] };
+    }
+
+    let list;
+    if (Array.isArray(current)) list = current;
+    else if (current && Array.isArray(current.scores)) list = current.scores;
+    else list = [];
+
+    // Adiciona a nova pontuação
+    list.push(entry);
+
+    // Ordena por score decrescente
+    list.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+    // Salva de volta no npoint (POST)
+    const saveRes = await fetch(NPOINT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scores: list })
+    });
+
+    if (!saveRes.ok) throw new Error('Falha ao salvar (HTTP ' + saveRes.status + ')');
+
+    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado! MooScore: ${formatNumber(entry.score)}</span>`;
+    toast('🐮 Pontuação enviada com sucesso!', 'success');
+
+    // Recarrega ranking
+    await loadScores();
+  } catch (err) {
+    console.error(err);
+    uploadStatus.innerHTML = `<span style="color:var(--accent)">❌ Falha ao enviar ${escapeHtml(filename)}: ${escapeHtml(err.message)}</span>`;
+    toast('Erro ao enviar para o npoint', 'error');
+    throw err;
+  }
+}
+
+/* ============================================================
+   INICIALIZAÇÃO
+   ============================================================ */
+loadScores();
+
+// Auto-refresh a cada 60s
+setInterval(loadScores, 60000);
+</script>
+</body>
+</html>
