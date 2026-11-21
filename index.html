@@ -127,6 +127,50 @@
 
   .upload-zone input[type="file"] { display: none; }
 
+  /* Campo de nome */
+  .name-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .name-field label {
+    font-size: 0.85rem;
+    color: var(--accent2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .name-field input {
+    width: 100%;
+    max-width: 320px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+    text-align: center;
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .name-field input::placeholder { color: var(--text-dim); }
+
+  .name-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
+  }
+
+  .name-field .name-hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
   /* Upload status */
   .upload-status {
     margin-top: 12px;
@@ -288,6 +332,13 @@
   <!-- Upload -->
   <div class="upload-zone" id="uploadZone">
     <input type="file" id="fileInput" accept=".json,application/json" multiple>
+
+    <div class="name-field">
+      <label for="playerName">Seu nome de fazendeiro</label>
+      <input type="text" id="playerName" placeholder="Ex.: CowMaster99" maxlength="24">
+      <div class="name-hint">Aparecerá no ranking junto com seu MooScore</div>
+    </div>
+
     <div class="big-icon">📤</div>
     <h3>Enviar pontuação</h3>
     <p>Arraste o arquivo <strong>.json</strong> gerado pelo BenchMoo ou clique para selecionar</p>
@@ -331,12 +382,6 @@
 <script>
 /* ============================================================
    CONFIGURAÇÃO DO NPOINT
-   ============================================================
-   1. Acesse https://npoint.io
-   2. Crie um novo endpoint com o conteúdo inicial:
-      { "scores": [] }
-   3. Copie o ID do endpoint (a parte depois de npoint.io/api/)
-   4. Cole abaixo em NPOINT_ID
    ============================================================ */
 const NPOINT_ID = '28efdb27cdf0bb21651c';
 const NPOINT_URL = `https://api.npoint.io/${NPOINT_ID}`;
@@ -382,12 +427,10 @@ async function loadScores() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // Aceita {scores: [...]} ou array direto
     if (Array.isArray(data)) scores = data;
     else if (data && Array.isArray(data.scores)) scores = data.scores;
     else scores = [];
 
-    // Ordena por score decrescente
     scores.sort((a, b) => (b.score || 0) - (a.score || 0));
     loading = false;
     renderRanking();
@@ -473,7 +516,6 @@ function updateStats() {
   document.getElementById('stat-top').textContent =
     scores.length ? formatNumber(scores[0].score || 0) : '—';
 
-  // Gargalo mais comum
   const counts = {};
   scores.forEach(s => {
     if (s.gargalo) counts[s.gargalo] = (counts[s.gargalo] || 0) + 1;
@@ -488,8 +530,28 @@ function updateStats() {
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadStatus = document.getElementById('uploadStatus');
+const nameInput = document.getElementById('playerName');
 
-uploadZone.addEventListener('click', () => fileInput.click());
+// Impede que cliques no campo de nome abram o seletor de arquivos
+nameInput.addEventListener('click', e => e.stopPropagation());
+nameInput.addEventListener('mousedown', e => e.stopPropagation());
+
+// Restaura nome salvo anteriormente
+try {
+  const savedName = localStorage.getItem('benchmoo_player_name');
+  if (savedName) nameInput.value = savedName;
+} catch (e) { /* localStorage indisponível */ }
+
+// Salva o nome conforme o usuário digita
+nameInput.addEventListener('input', () => {
+  try { localStorage.setItem('benchmoo_player_name', nameInput.value); } catch (e) {}
+});
+
+uploadZone.addEventListener('click', (e) => {
+  // Não abre o seletor se o clique foi no input de nome
+  if (e.target === nameInput || nameInput.contains(e.target)) return;
+  fileInput.click();
+});
 
 uploadZone.addEventListener('dragover', e => {
   e.preventDefault();
@@ -511,6 +573,16 @@ fileInput.addEventListener('change', () => {
 
 async function handleFiles(files) {
   if (!files.length) return;
+
+  // Valida o nome antes de processar
+  const playerName = nameInput.value.trim();
+  if (!playerName) {
+    uploadStatus.innerHTML = `<span style="color:var(--accent)">⚠️ Digite seu nome antes de enviar</span>`;
+    toast('Digite seu nome antes de enviar!', 'error');
+    nameInput.focus();
+    return;
+  }
+
   uploadStatus.textContent = '';
 
   for (const file of Array.from(files)) {
@@ -522,7 +594,7 @@ async function handleFiles(files) {
       const text = await file.text();
       const parsed = JSON.parse(text);
       uploadStatus.innerHTML = `<span style="color:var(--text-dim)">⏳ Processando ${escapeHtml(file.name)}...</span>`;
-      const entry = parseBenchMooFile(parsed);
+      const entry = parseBenchMooFile(parsed, playerName);
       await submitScore(entry, file.name);
     } catch (err) {
       console.error(err);
@@ -534,30 +606,20 @@ async function handleFiles(files) {
 
 /* ============================================================
    PARSER DO BENCHMOO
-   ============================================================
-   A ferramenta BenchMoo salva em ~/.benchmoo_best.json:
-   {
-     "score": 12345,
-     "fps_medio": 987.6,
-     "vacas": 16,
-     "gargalo": "CPU"
-   }
-   Também aceita o objeto completo com metadados do sistema
-   caso o usuário edite/exporte manualmente.
    ============================================================ */
-function parseBenchMooFile(data) {
+function parseBenchMooFile(data, playerName) {
   if (!data || typeof data !== 'object') {
     throw new Error('Formato inválido');
   }
 
-  // Extrai os campos essenciais
   const score = Number(data.score);
   if (!isFinite(score) || score <= 0) {
     throw new Error('Campo "score" ausente ou inválido');
   }
 
   const entry = {
-    name: data.name || data.fazendeiro || 'Anônimo',
+    // Prioriza o nome digitado pelo usuário no campo
+    name: playerName || data.name || data.fazendeiro || 'Anônimo',
     score: Math.round(score),
     fps_medio: Number(data.fps_medio) || 0,
     vacas: Number(data.vacas ?? data.pico_vacas) || 0,
@@ -569,7 +631,6 @@ function parseBenchMooFile(data) {
     raw: data
   };
 
-  // Tenta extrair metadados do sistema se existirem
   if (data.sistema) {
     entry.cpu = data.sistema.cpu || entry.cpu;
     entry.gpu = data.sistema.gpu || entry.gpu;
@@ -584,7 +645,6 @@ function parseBenchMooFile(data) {
    ============================================================ */
 async function submitScore(entry, filename) {
   try {
-    // Busca estado atual
     const res = await fetch(NPOINT_URL + '?t=' + Date.now());
     let current;
     if (res.ok) {
@@ -598,13 +658,9 @@ async function submitScore(entry, filename) {
     else if (current && Array.isArray(current.scores)) list = current.scores;
     else list = [];
 
-    // Adiciona a nova pontuação
     list.push(entry);
-
-    // Ordena por score decrescente
     list.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    // Salva de volta no npoint (POST)
     const saveRes = await fetch(NPOINT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -613,10 +669,9 @@ async function submitScore(entry, filename) {
 
     if (!saveRes.ok) throw new Error('Falha ao salvar (HTTP ' + saveRes.status + ')');
 
-    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado! MooScore: ${formatNumber(entry.score)}</span>`;
+    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado como <strong>${escapeHtml(entry.name)}</strong>! MooScore: ${formatNumber(entry.score)}</span>`;
     toast('🐮 Pontuação enviada com sucesso!', 'success');
 
-    // Recarrega ranking
     await loadScores();
   } catch (err) {
     console.error(err);
@@ -631,7 +686,6 @@ async function submitScore(entry, filename) {
    ============================================================ */
 loadScores();
 
-// Auto-refresh a cada 60s
 setInterval(loadScores, 60000);
 </script>
 </body>
