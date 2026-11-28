@@ -48,10 +48,7 @@
   .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 20px; }
 
   /* Header */
-  header {
-    text-align: center;
-    padding: 30px 0 20px;
-  }
+  header { text-align: center; padding: 30px 0 20px; }
 
   .logo {
     font-size: 3.5rem;
@@ -64,17 +61,9 @@
     line-height: 1.1;
   }
 
-  .logo .cow-icon {
-    -webkit-text-fill-color: initial;
-    font-size: 3rem;
-  }
+  .logo .cow-icon { -webkit-text-fill-color: initial; font-size: 3rem; }
 
-  .tagline {
-    color: var(--text-dim);
-    font-size: 0.95rem;
-    margin-top: 6px;
-    font-style: italic;
-  }
+  .tagline { color: var(--text-dim); font-size: 0.95rem; margin-top: 6px; font-style: italic; }
 
   /* Stats bar */
   .stats-bar {
@@ -96,11 +85,7 @@
     font-size: 0.9rem;
   }
 
-  .stat-pill .num {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--accent2);
-  }
+  .stat-pill .num { font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
 
   /* Upload zone */
   .upload-zone {
@@ -127,13 +112,23 @@
 
   .upload-zone input[type="file"] { display: none; }
 
-  /* Campo de nome */
+  /* Campos (nome + plataforma) */
+  .fields-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
   .name-field {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    margin-bottom: 18px;
+    flex: 1 1 220px;
+    max-width: 320px;
+    cursor: default;
   }
 
   .name-field label {
@@ -144,9 +139,9 @@
     letter-spacing: 1px;
   }
 
-  .name-field input {
+  .name-field input,
+  .name-field select {
     width: 100%;
-    max-width: 320px;
     background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 10px;
@@ -159,24 +154,78 @@
     outline: none;
   }
 
+  .name-field select option { background: var(--bg-card); color: var(--text); }
   .name-field input::placeholder { color: var(--text-dim); }
 
-  .name-field input:focus {
+  .name-field input:focus,
+  .name-field select:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
   }
 
-  .name-field .name-hint {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-  }
+  .name-field .name-hint { font-size: 0.75rem; color: var(--text-dim); }
 
   /* Upload status */
-  .upload-status {
-    margin-top: 12px;
-    font-size: 0.85rem;
-    min-height: 20px;
+  .upload-status { margin-top: 12px; font-size: 0.85rem; min-height: 20px; }
+
+  /* Abas de categoria */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 18px;
   }
+
+  .tab {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-dim);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--text); background: var(--bg-card-hover); }
+
+  .tab.active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #c43650);
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgba(233,69,96,0.35);
+  }
+
+  .tab.weekly { border-color: rgba(245,166,35,0.5); color: var(--accent2); }
+  .tab.weekly.active {
+    color: #1a1a2e;
+    background: linear-gradient(135deg, var(--gold), var(--accent2));
+    border-color: var(--accent2);
+    box-shadow: 0 4px 16px rgba(245,166,35,0.35);
+  }
+
+  /* Caixa do torneio semanal */
+  .weekly-box {
+    background: linear-gradient(135deg, rgba(245,166,35,0.12), rgba(233,69,96,0.1));
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    display: none;
+  }
+
+  .weekly-box.show { display: block; }
+  .weekly-box h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--gold); }
+
+  .weekly-grid { display: flex; gap: 24px; flex-wrap: wrap; font-size: 0.9rem; }
+  .weekly-grid div span { display: block; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .weekly-grid div strong { font-size: 1.05rem; }
+  .weekly-rule { margin-top: 12px; font-size: 0.8rem; color: var(--text-dim); }
+  .ok { color: var(--green); }
+  .warn { color: var(--accent2); }
 
   /* Table */
   .table-wrap {
@@ -199,42 +248,21 @@
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
 
-  tbody tr {
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    transition: background 0.2s;
-  }
-
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
   tbody tr:hover { background: var(--bg-card-hover); }
   tbody tr:last-child { border-bottom: none; }
 
   td { padding: 14px 12px; font-size: 0.9rem; vertical-align: middle; }
 
-  .rank {
-    font-size: 1.3rem;
-    font-weight: 900;
-    text-align: center;
-    width: 50px;
-  }
-
+  .rank { font-size: 1.3rem; font-weight: 900; text-align: center; width: 50px; }
   .rank.gold { color: var(--gold); }
   .rank.silver { color: var(--silver); }
   .rank.bronze { color: var(--bronze); }
 
-  .cow-name {
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
+  .cow-name { font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .cow-name .emoji { font-size: 1.3rem; }
 
-  .score {
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: var(--accent2);
-    font-variant-numeric: tabular-nums;
-  }
+  .score { font-size: 1.2rem; font-weight: 900; color: var(--accent2); font-variant-numeric: tabular-nums; }
 
   .specs { color: var(--text-dim); font-size: 0.8rem; line-height: 1.5; }
 
@@ -248,19 +276,40 @@
     font-weight: 700;
   }
 
-  .fps-val {
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
+  .badge.plat { background: rgba(245,166,35,0.15); color: var(--accent2); }
 
+  .fps-val { font-weight: 700; font-variant-numeric: tabular-nums; }
   .vacas-val { font-variant-numeric: tabular-nums; }
 
-  /* Loading / empty */
-  .empty-state, .loading-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
+  /* Histórico de torneios */
+  .history { margin-top: 36px; display: none; }
+  .history.show { display: block; }
+  .history h2 { font-size: 1.3rem; margin-bottom: 4px; text-align: center; }
+  .history .sub { text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 18px; }
+
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
   }
+
+  .hist-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .hist-card .hist-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 8px; }
+  .hist-card .period { font-weight: 800; }
+  .hist-card .players { font-size: 0.75rem; color: var(--text-dim); white-space: nowrap; }
+
+  .hist-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.88rem; padding: 3px 0; }
+  .hist-row .hn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hist-row .hs { color: var(--accent2); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  /* Loading / empty */
+  .empty-state, .loading-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
 
   .loading-state .spinner {
     width: 40px; height: 40px;
@@ -296,13 +345,7 @@
   .toast.success { border-color: var(--green); }
 
   /* Footer */
-  footer {
-    text-align: center;
-    padding: 40px 0 20px;
-    color: var(--text-dim);
-    font-size: 0.8rem;
-  }
-
+  footer { text-align: center; padding: 40px 0 20px; color: var(--text-dim); font-size: 0.8rem; }
   footer .moo { color: var(--accent); }
 
   /* Responsive */
@@ -312,6 +355,7 @@
     td, th { padding: 10px 8px; }
     .stats-bar { gap: 12px; }
     .stat-pill { padding: 8px 14px; font-size: 0.8rem; }
+    .tab { padding: 8px 14px; font-size: 0.8rem; }
   }
 </style>
 </head>
@@ -320,7 +364,7 @@
 <div class="container">
   <header>
     <div class="logo"><span class="cow-icon">🐮</span> MooScore</div>
-    <div class="tagline">O ranking definitivo de benchmark bovino · BenchMoo</div>
+    <div class="tagline">O ranking definitivo de benchmark bovino · inspirado no hwbot</div>
   </header>
 
   <div class="stats-bar">
@@ -332,19 +376,43 @@
   <!-- Upload -->
   <div class="upload-zone" id="uploadZone">
     <input type="file" id="fileInput" accept=".json,application/json" multiple>
-
-    <div class="name-field">
-      <label for="playerName">Seu nome de fazendeiro</label>
-      <input type="text" id="playerName" placeholder="Ex.: CowMaster99" maxlength="24">
-      <div class="name-hint">Aparecerá no ranking junto com seu MooScore</div>
-    </div>
-
     <div class="big-icon">📤</div>
     <h3>Enviar pontuação</h3>
+
+    <div class="fields-row">
+      <div class="name-field">
+        <label for="playerName">Seu nome</label>
+        <input type="text" id="playerName" maxlength="30" placeholder="Ex: pixelcatBR" autocomplete="off">
+        <span class="name-hint">Aparece no ranking</span>
+      </div>
+      <div class="name-field">
+        <label for="platformSelect">Plataforma</label>
+        <select id="platformSelect">
+          <option value="desktop">🖥️ Desktop</option>
+          <option value="web">🌐 Web</option>
+          <option value="mobile">📱 Mobile</option>
+        </select>
+        <span class="name-hint">Em qual versão você testou</span>
+      </div>
+    </div>
+
     <p>Arraste o arquivo <strong>.json</strong> gerado pelo BenchMoo ou clique para selecionar</p>
     <div class="hint">O arquivo <code>~/.benchmoo_best.json</code> ou um resultado exportado</div>
+    <div class="hint">Toda pontuação enviada também entra automaticamente no 🏆 torneio Weekly da semana</div>
     <div class="upload-status" id="uploadStatus"></div>
   </div>
+
+  <!-- Abas -->
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-view="global">🌍 Global</button>
+    <button class="tab" data-view="web">🌐 Web</button>
+    <button class="tab" data-view="mobile">📱 Mobile</button>
+    <button class="tab" data-view="desktop">🖥️ Desktop</button>
+    <button class="tab weekly" data-view="weekly">🏆 Weekly</button>
+  </div>
+
+  <!-- Info do torneio semanal -->
+  <div class="weekly-box" id="weeklyBox"></div>
 
   <!-- Ranking -->
   <div class="table-wrap">
@@ -354,6 +422,7 @@
           <th>#</th>
           <th>Fazendeiro</th>
           <th>MooScore</th>
+          <th class="hide-mobile">Plat.</th>
           <th class="hide-mobile">Vacas</th>
           <th class="hide-mobile">FPS</th>
           <th class="hide-mobile">Gargalo</th>
@@ -361,7 +430,7 @@
         </tr>
       </thead>
       <tbody id="rankingBody">
-        <tr><td colspan="7">
+        <tr><td colspan="8">
           <div class="loading-state">
             <div class="spinner"></div>
             <div>Buscando pontuações no pasto...</div>
@@ -370,6 +439,13 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Histórico de torneios válidos -->
+  <section class="history" id="historySection">
+    <h2>📜 Histórico de torneios válidos</h2>
+    <div class="sub">Só entram aqui as semanas com 2 ou mais jogadores</div>
+    <div class="history-grid" id="historyGrid"></div>
+  </section>
 
   <footer>
     <p>🐮 <span class="moo">MooScore</span> · BenchMoo Benchmark · Feito com 🥛 e 💻</p>
@@ -387,10 +463,30 @@ const NPOINT_ID = '28efdb27cdf0bb21651c';
 const NPOINT_URL = `https://api.npoint.io/${NPOINT_ID}`;
 
 /* ============================================================
+   CONFIGURAÇÃO DAS CATEGORIAS
+   ============================================================ */
+const PLATFORMS = {
+  desktop: { label: 'Desktop', icon: '🖥️' },
+  web:     { label: 'Web',     icon: '🌐' },
+  mobile:  { label: 'Mobile',  icon: '📱' }
+};
+
+const VIEW_TITLES = {
+  global: 'Global', web: 'Web', mobile: 'Mobile', desktop: 'Desktop', weekly: 'Weekly'
+};
+
+// Fuso fixo de Brasília (UTC-3) pra TODO MUNDO virar a semana no mesmo instante
+const TZ_OFFSET_MS = -3 * 3600 * 1000;
+const DAY_MS = 86400000;
+const MIN_PLAYERS_VALID = 2;   // precisa de MAIS de 1 jogador pra valer
+
+/* ============================================================
    ESTADO
    ============================================================ */
 let scores = [];
+let history = [];
 let loading = true;
+let currentView = 'global';
 
 /* ============================================================
    UTILITÁRIOS
@@ -416,30 +512,125 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
+   SEMANAS (domingo 00:00 → sábado 23:59, horário de Brasília)
+   ============================================================ */
+// Retorna o domingo (em "hora de Brasília") da semana da data informada
+function weekStartShifted(date) {
+  const d = new Date(date.getTime() + TZ_OFFSET_MS);
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay()); // getUTCDay(): 0 = domingo
+  return d;
+}
+
+// Identificador da semana = data do domingo, ex: "2026-11-22"
+function weekKey(date) {
+  return weekStartShifted(date).toISOString().slice(0, 10);
+}
+
+// Instante real em que a semana atual termina (domingo 00:00 BRT seguinte)
+function currentWeekEnd() {
+  return new Date(weekStartShifted(new Date()).getTime() + 7 * DAY_MS - TZ_OFFSET_MS);
+}
+
+function fmtDM(d) {
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  return dd + '/' + mm;
+}
+
+// "22/11 a 28/11" a partir da chave da semana
+function weekRangeLabel(key) {
+  const start = new Date(key + 'T00:00:00Z');
+  const end = new Date(start.getTime() + 6 * DAY_MS);
+  return fmtDM(start) + ' a ' + fmtDM(end);
+}
+
+/* ============================================================
+   DADOS: normalizar, melhor por jogador, finalizar semanas
+   ============================================================ */
+// Aceita o formato antigo (lista ou {scores}) e o novo ({scores, history})
+function normalizeData(d) {
+  if (Array.isArray(d)) return { scores: d, history: [] };
+  return {
+    scores: d && Array.isArray(d.scores) ? d.scores : [],
+    history: d && Array.isArray(d.history) ? d.history : []
+  };
+}
+
+// Um jogador = um nome (sem diferenciar maiúscula/minúscula); fica a maior pontuação
+function bestPerPlayer(list) {
+  const map = new Map();
+  list.forEach(s => {
+    const k = String(s.name || 'Anônimo').trim().toLowerCase();
+    if (!map.has(k) || (s.score || 0) > (map.get(k).score || 0)) map.set(k, s);
+  });
+  return Array.from(map.values()).sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
+// A "checagem de sábado": toda semana que já acabou e ainda não foi
+// checada vira um registro no histórico (válida ou não).
+// Retorna true se mudou alguma coisa (precisa salvar).
+function finalizeWeeks(data) {
+  const current = weekKey(new Date());
+  const done = new Set(data.history.map(h => h.week));
+  const pending = new Set(
+    data.scores.filter(s => s.week && s.week < current && !done.has(s.week)).map(s => s.week)
+  );
+
+  let changed = false;
+  Array.from(pending).sort().forEach(w => {
+    const ranked = bestPerPlayer(data.scores.filter(s => s.week === w));
+    const valid = ranked.length >= MIN_PLAYERS_VALID;
+    const record = { week: w, valid, players: ranked.length };
+    if (valid) {
+      record.top = ranked.slice(0, 3).map(s => ({
+        name: s.name || 'Anônimo',
+        score: s.score || 0,
+        platform: s.platform || ''
+      }));
+    }
+    data.history.push(record);
+    changed = true;
+  });
+  return changed;
+}
+
+async function saveData(data) {
+  const res = await fetch(NPOINT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scores: data.scores, history: data.history })
+  });
+  if (!res.ok) throw new Error('Falha ao salvar (HTTP ' + res.status + ')');
+}
+
+/* ============================================================
    CARREGAR DO NPOINT
    ============================================================ */
 async function loadScores() {
   loading = true;
-  renderRanking();
+  renderAll();
 
   try {
     const res = await fetch(NPOINT_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const data = normalizeData(await res.json());
 
-    if (Array.isArray(data)) scores = data;
-    else if (data && Array.isArray(data.scores)) scores = data.scores;
-    else scores = [];
+    // Checagem das semanas que já terminaram
+    if (finalizeWeeks(data)) {
+      try { await saveData(data); } catch (e) { console.warn('Não salvou o histórico:', e); }
+    }
 
+    scores = data.scores;
+    history = data.history;
     scores.sort((a, b) => (b.score || 0) - (a.score || 0));
     loading = false;
-    renderRanking();
-    updateStats();
+    renderAll();
   } catch (err) {
     loading = false;
     console.error('Erro ao carregar:', err);
     document.getElementById('rankingBody').innerHTML = `
-      <tr><td colspan="7">
+      <tr><td colspan="8">
         <div class="empty-state">
           <div style="font-size:2.5rem;margin-bottom:10px;">🐄💤</div>
           <div><strong>Não foi possível carregar o ranking.</strong></div>
@@ -454,13 +645,33 @@ async function loadScores() {
 }
 
 /* ============================================================
-   RENDERIZAR RANKING
+   LISTA DA ABA ATUAL
    ============================================================ */
+function getViewScores() {
+  if (currentView === 'global') return scores.slice();
+  if (currentView === 'weekly') {
+    const wk = weekKey(new Date());
+    return bestPerPlayer(scores.filter(s => s.week === wk));
+  }
+  // web / mobile / desktop
+  return scores.filter(s => s.platform === currentView);
+}
+
+/* ============================================================
+   RENDERIZAR
+   ============================================================ */
+function renderAll() {
+  renderRanking();
+  updateStats();
+  renderWeeklyBox();
+  renderHistory();
+}
+
 function renderRanking() {
   const tbody = document.getElementById('rankingBody');
 
   if (loading) {
-    tbody.innerHTML = `<tr><td colspan="7">
+    tbody.innerHTML = `<tr><td colspan="8">
       <div class="loading-state">
         <div class="spinner"></div>
         <div>Buscando pontuações no pasto...</div>
@@ -469,21 +680,27 @@ function renderRanking() {
     return;
   }
 
-  if (!scores.length) {
-    tbody.innerHTML = `<tr><td colspan="7">
+  const list = getViewScores();
+
+  if (!list.length) {
+    const msg = currentView === 'weekly'
+      ? 'Ninguém enviou nada nesta semana ainda. Seja o primeiro do torneio!'
+      : 'Seja o primeiro a enviar seu MooScore' + (currentView === 'global' ? '.' : ' nesta categoria.');
+    tbody.innerHTML = `<tr><td colspan="8">
       <div class="empty-state">
         <div style="font-size:2.5rem;margin-bottom:10px;">🐮</div>
         <div><strong>Nenhuma pontuação ainda!</strong></div>
-        <div style="margin-top:6px;font-size:0.85rem;">Seja o primeiro a enviar seu MooScore.</div>
+        <div style="margin-top:6px;font-size:0.85rem;">${msg}</div>
       </div>
     </td></tr>`;
     return;
   }
 
-  tbody.innerHTML = scores.map((s, i) => {
+  tbody.innerHTML = list.map((s, i) => {
     const rank = i + 1;
     const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const plat = PLATFORMS[s.platform];
 
     return `<tr>
       <td class="rank ${rankClass}">${rankIcon}</td>
@@ -494,8 +711,11 @@ function renderRanking() {
         </div>
       </td>
       <td><span class="score">${formatNumber(s.score || 0)}</span></td>
+      <td class="hide-mobile">
+        ${plat ? `<span class="badge plat">${plat.icon} ${plat.label}</span>` : '—'}
+      </td>
       <td class="hide-mobile vacas-val">${s.vacas ?? '—'}</td>
-      <td class="hide-mobile fps-val">${s.fps_medio != null ? s.fps_medio.toFixed(1) : '—'}</td>
+      <td class="hide-mobile fps-val">${s.fps_medio != null ? Number(s.fps_medio).toFixed(1) : '—'}</td>
       <td class="hide-mobile">
         ${s.gargalo ? `<span class="badge">${escapeHtml(s.gargalo)}</span>` : '—'}
       </td>
@@ -509,20 +729,106 @@ function renderRanking() {
 }
 
 /* ============================================================
-   ESTATÍSTICAS
+   ESTATÍSTICAS (da aba atual)
    ============================================================ */
 function updateStats() {
-  document.getElementById('stat-total').textContent = scores.length;
+  const list = loading ? [] : getViewScores();
+  document.getElementById('stat-total').textContent = list.length || (loading ? '—' : 0);
   document.getElementById('stat-top').textContent =
-    scores.length ? formatNumber(scores[0].score || 0) : '—';
+    list.length ? formatNumber(list[0].score || 0) : '—';
 
   const counts = {};
-  scores.forEach(s => {
-    if (s.gargalo) counts[s.gargalo] = (counts[s.gargalo] || 0) + 1;
+  list.forEach(s => {
+    if (s.gargalo && s.gargalo !== '—') counts[s.gargalo] = (counts[s.gargalo] || 0) + 1;
   });
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   document.getElementById('stat-gargalo').textContent = entries.length ? entries[0][0] : '—';
 }
+
+/* ============================================================
+   CAIXA DO TORNEIO SEMANAL
+   ============================================================ */
+function renderWeeklyBox() {
+  const box = document.getElementById('weeklyBox');
+  if (currentView !== 'weekly') {
+    box.classList.remove('show');
+    return;
+  }
+
+  const wk = weekKey(new Date());
+  const players = loading ? 0 : bestPerPlayer(scores.filter(s => s.week === wk)).length;
+
+  const msLeft = Math.max(0, currentWeekEnd().getTime() - Date.now());
+  const d = Math.floor(msLeft / DAY_MS);
+  const h = Math.floor((msLeft % DAY_MS) / 3600000);
+  const m = Math.floor((msLeft % 3600000) / 60000);
+  const left = d > 0 ? `${d}d ${h}h` : `${h}h ${m}min`;
+
+  const status = players >= MIN_PLAYERS_VALID
+    ? `<span class="ok">✅ Torneio válido até agora (${players} jogadores)</span>`
+    : `<span class="warn">⚠️ Precisa de pelo menos ${MIN_PLAYERS_VALID} jogadores pra valer (agora: ${players})</span>`;
+
+  box.innerHTML = `
+    <h3>🏆 Torneio Weekly</h3>
+    <div class="weekly-grid">
+      <div><span>Semana</span><strong>${weekRangeLabel(wk)}</strong></div>
+      <div><span>Termina em</span><strong>${left}</strong></div>
+      <div><span>Jogadores</span><strong>${players}</strong></div>
+    </div>
+    <div class="weekly-rule">
+      ${status}<br>
+      Começa no domingo e fecha no sábado (horário de Brasília). No fim, se teve 2 ou mais jogadores, o torneio é válido e vai pro histórico. Vale a melhor pontuação de cada jogador.
+    </div>`;
+  box.classList.add('show');
+}
+
+/* ============================================================
+   HISTÓRICO DE TORNEIOS VÁLIDOS
+   ============================================================ */
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  if (currentView !== 'weekly') {
+    section.classList.remove('show');
+    return;
+  }
+  section.classList.add('show');
+
+  const grid = document.getElementById('historyGrid');
+  const valids = history.filter(h => h.valid).sort((a, b) => b.week.localeCompare(a.week));
+
+  if (!valids.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:30px 10px;">
+      <div style="font-size:2rem;margin-bottom:8px;">📭</div>
+      Nenhum torneio válido terminou ainda.
+    </div>`;
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  grid.innerHTML = valids.map(h => `
+    <div class="hist-card">
+      <div class="hist-head">
+        <span class="period">📅 ${weekRangeLabel(h.week)}</span>
+        <span class="players">${h.players} jogadores</span>
+      </div>
+      ${(h.top || []).map((p, i) => `
+        <div class="hist-row">
+          <span class="hn">${medals[i]} ${escapeHtml(p.name)}</span>
+          <span class="hs">${formatNumber(p.score)}</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ============================================================
+   ABAS
+   ============================================================ */
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  currentView = btn.dataset.view;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+  renderAll();
+});
 
 /* ============================================================
    UPLOAD / PARSING
@@ -531,25 +837,27 @@ const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadStatus = document.getElementById('uploadStatus');
 const nameInput = document.getElementById('playerName');
+const platformSelect = document.getElementById('platformSelect');
 
-// Impede que cliques no campo de nome abram o seletor de arquivos
-nameInput.addEventListener('click', e => e.stopPropagation());
-nameInput.addEventListener('mousedown', e => e.stopPropagation());
-
-// Restaura nome salvo anteriormente
+// Restaura nome e plataforma salvos anteriormente
 try {
   const savedName = localStorage.getItem('benchmoo_player_name');
   if (savedName) nameInput.value = savedName;
+  const savedPlat = localStorage.getItem('benchmoo_platform');
+  if (savedPlat && PLATFORMS[savedPlat]) platformSelect.value = savedPlat;
 } catch (e) { /* localStorage indisponível */ }
 
-// Salva o nome conforme o usuário digita
 nameInput.addEventListener('input', () => {
   try { localStorage.setItem('benchmoo_player_name', nameInput.value); } catch (e) {}
 });
 
+platformSelect.addEventListener('change', () => {
+  try { localStorage.setItem('benchmoo_platform', platformSelect.value); } catch (e) {}
+});
+
 uploadZone.addEventListener('click', (e) => {
-  // Não abre o seletor se o clique foi no input de nome
-  if (e.target === nameInput || nameInput.contains(e.target)) return;
+  // Cliques nos campos (nome / plataforma) não abrem o seletor de arquivos
+  if (e.target.closest('.name-field')) return;
   fileInput.click();
 });
 
@@ -583,6 +891,7 @@ async function handleFiles(files) {
     return;
   }
 
+  const platform = platformSelect.value;
   uploadStatus.textContent = '';
 
   for (const file of Array.from(files)) {
@@ -594,7 +903,7 @@ async function handleFiles(files) {
       const text = await file.text();
       const parsed = JSON.parse(text);
       uploadStatus.innerHTML = `<span style="color:var(--text-dim)">⏳ Processando ${escapeHtml(file.name)}...</span>`;
-      const entry = parseBenchMooFile(parsed, playerName);
+      const entry = parseBenchMooFile(parsed, playerName, platform);
       await submitScore(entry, file.name);
     } catch (err) {
       console.error(err);
@@ -607,7 +916,7 @@ async function handleFiles(files) {
 /* ============================================================
    PARSER DO BENCHMOO
    ============================================================ */
-function parseBenchMooFile(data, playerName) {
+function parseBenchMooFile(data, playerName, platform) {
   if (!data || typeof data !== 'object') {
     throw new Error('Formato inválido');
   }
@@ -616,6 +925,8 @@ function parseBenchMooFile(data, playerName) {
   if (!isFinite(score) || score <= 0) {
     throw new Error('Campo "score" ausente ou inválido');
   }
+
+  const now = new Date();
 
   const entry = {
     // Prioriza o nome digitado pelo usuário no campo
@@ -627,7 +938,9 @@ function parseBenchMooFile(data, playerName) {
     cpu: data.cpu || '',
     gpu: data.gpu || '',
     ram: data.ram || '',
-    timestamp: new Date().toISOString(),
+    platform: PLATFORMS[platform] ? platform : 'desktop',   // categoria
+    week: weekKey(now),                                      // semana do torneio weekly
+    timestamp: now.toISOString(),
     raw: data
   };
 
@@ -646,30 +959,18 @@ function parseBenchMooFile(data, playerName) {
 async function submitScore(entry, filename) {
   try {
     const res = await fetch(NPOINT_URL + '?t=' + Date.now());
-    let current;
-    if (res.ok) {
-      current = await res.json();
-    } else {
-      current = { scores: [] };
-    }
+    const data = res.ok ? normalizeData(await res.json()) : { scores: [], history: [] };
 
-    let list;
-    if (Array.isArray(current)) list = current;
-    else if (current && Array.isArray(current.scores)) list = current.scores;
-    else list = [];
+    data.scores.push(entry);
+    data.scores.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    list.push(entry);
-    list.sort((a, b) => (b.score || 0) - (a.score || 0));
+    // Aproveita pra checar semanas antigas que ainda não foram fechadas
+    finalizeWeeks(data);
 
-    const saveRes = await fetch(NPOINT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scores: list })
-    });
+    await saveData(data);
 
-    if (!saveRes.ok) throw new Error('Falha ao salvar (HTTP ' + saveRes.status + ')');
-
-    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado como <strong>${escapeHtml(entry.name)}</strong>! MooScore: ${formatNumber(entry.score)}</span>`;
+    const plat = PLATFORMS[entry.platform];
+    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado como <strong>${escapeHtml(entry.name)}</strong> (${plat.icon} ${plat.label})! MooScore: ${formatNumber(entry.score)} · já conta no Weekly 🏆</span>`;
     toast('🐮 Pontuação enviada com sucesso!', 'success');
 
     await loadScores();
@@ -686,7 +987,8 @@ async function submitScore(entry, filename) {
    ============================================================ */
 loadScores();
 
-setInterval(loadScores, 60000);
+setInterval(loadScores, 60000);        // recarrega ranking (e checa se a semana virou)
+setInterval(renderWeeklyBox, 30000);   // atualiza o contador do torneio
 </script>
 </body>
 </html>
