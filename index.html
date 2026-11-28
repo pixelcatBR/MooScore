@@ -165,6 +165,18 @@
 
   .name-field .name-hint { font-size: 0.75rem; color: var(--text-dim); }
 
+  .upload-target {
+    display: inline-block;
+    margin-top: 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(245,166,35,0.4);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    color: var(--accent2);
+    font-weight: 700;
+  }
+
   /* Upload status */
   .upload-status { margin-top: 12px; font-size: 0.85rem; min-height: 20px; }
 
@@ -385,20 +397,11 @@
         <input type="text" id="playerName" maxlength="30" placeholder="Ex: pixelcatBR" autocomplete="off">
         <span class="name-hint">Aparece no ranking</span>
       </div>
-      <div class="name-field">
-        <label for="platformSelect">Plataforma</label>
-        <select id="platformSelect">
-          <option value="desktop">🖥️ Desktop</option>
-          <option value="web">🌐 Web</option>
-          <option value="mobile">📱 Mobile</option>
-        </select>
-        <span class="name-hint">Em qual versão você testou</span>
-      </div>
     </div>
 
     <p>Arraste o arquivo <strong>.json</strong> gerado pelo BenchMoo ou clique para selecionar</p>
     <div class="hint">O arquivo <code>~/.benchmoo_best.json</code> ou um resultado exportado</div>
-    <div class="hint">Toda pontuação enviada também entra automaticamente no 🏆 torneio Weekly da semana</div>
+    <div class="upload-target" id="uploadTarget"></div>
     <div class="upload-status" id="uploadStatus"></div>
   </div>
 
@@ -422,7 +425,6 @@
           <th>#</th>
           <th>Fazendeiro</th>
           <th>MooScore</th>
-          <th class="hide-mobile">Plat.</th>
           <th class="hide-mobile">Vacas</th>
           <th class="hide-mobile">FPS</th>
           <th class="hide-mobile">Gargalo</th>
@@ -430,7 +432,7 @@
         </tr>
       </thead>
       <tbody id="rankingBody">
-        <tr><td colspan="8">
+        <tr><td colspan="7">
           <div class="loading-state">
             <div class="spinner"></div>
             <div>Buscando pontuações no pasto...</div>
@@ -465,15 +467,17 @@ const NPOINT_URL = `https://api.npoint.io/${NPOINT_ID}`;
 /* ============================================================
    CONFIGURAÇÃO DAS CATEGORIAS
    ============================================================ */
-const PLATFORMS = {
-  desktop: { label: 'Desktop', icon: '🖥️' },
+// Cada categoria é separada: a pontuação vai SÓ pra categoria escolhida
+const CATEGORIES = {
+  global:  { label: 'Global',  icon: '🌍' },
   web:     { label: 'Web',     icon: '🌐' },
-  mobile:  { label: 'Mobile',  icon: '📱' }
+  mobile:  { label: 'Mobile',  icon: '📱' },
+  desktop: { label: 'Desktop', icon: '🖥️' },
+  weekly:  { label: 'Weekly',  icon: '🏆' }
 };
 
-const VIEW_TITLES = {
-  global: 'Global', web: 'Web', mobile: 'Mobile', desktop: 'Desktop', weekly: 'Weekly'
-};
+// Pontuações antigas (sem categoria) são tratadas como Global
+function catOf(s) { return s.category || 'global'; }
 
 // Fuso fixo de Brasília (UTC-3) pra TODO MUNDO virar a semana no mesmo instante
 const TZ_OFFSET_MS = -3 * 3600 * 1000;
@@ -574,19 +578,18 @@ function finalizeWeeks(data) {
   const current = weekKey(new Date());
   const done = new Set(data.history.map(h => h.week));
   const pending = new Set(
-    data.scores.filter(s => s.week && s.week < current && !done.has(s.week)).map(s => s.week)
+    data.scores.filter(s => catOf(s) === 'weekly' && s.week && s.week < current && !done.has(s.week)).map(s => s.week)
   );
 
   let changed = false;
   Array.from(pending).sort().forEach(w => {
-    const ranked = bestPerPlayer(data.scores.filter(s => s.week === w));
+    const ranked = bestPerPlayer(data.scores.filter(s => catOf(s) === 'weekly' && s.week === w));
     const valid = ranked.length >= MIN_PLAYERS_VALID;
     const record = { week: w, valid, players: ranked.length };
     if (valid) {
       record.top = ranked.slice(0, 3).map(s => ({
         name: s.name || 'Anônimo',
-        score: s.score || 0,
-        platform: s.platform || ''
+        score: s.score || 0
       }));
     }
     data.history.push(record);
@@ -630,7 +633,7 @@ async function loadScores() {
     loading = false;
     console.error('Erro ao carregar:', err);
     document.getElementById('rankingBody').innerHTML = `
-      <tr><td colspan="8">
+      <tr><td colspan="7">
         <div class="empty-state">
           <div style="font-size:2.5rem;margin-bottom:10px;">🐄💤</div>
           <div><strong>Não foi possível carregar o ranking.</strong></div>
@@ -648,13 +651,12 @@ async function loadScores() {
    LISTA DA ABA ATUAL
    ============================================================ */
 function getViewScores() {
-  if (currentView === 'global') return scores.slice();
   if (currentView === 'weekly') {
     const wk = weekKey(new Date());
-    return bestPerPlayer(scores.filter(s => s.week === wk));
+    return bestPerPlayer(scores.filter(s => catOf(s) === 'weekly' && s.week === wk));
   }
-  // web / mobile / desktop
-  return scores.filter(s => s.platform === currentView);
+  // global / web / mobile / desktop: cada uma só mostra o que foi enviado nela
+  return scores.filter(s => catOf(s) === currentView);
 }
 
 /* ============================================================
@@ -671,7 +673,7 @@ function renderRanking() {
   const tbody = document.getElementById('rankingBody');
 
   if (loading) {
-    tbody.innerHTML = `<tr><td colspan="8">
+    tbody.innerHTML = `<tr><td colspan="7">
       <div class="loading-state">
         <div class="spinner"></div>
         <div>Buscando pontuações no pasto...</div>
@@ -686,7 +688,7 @@ function renderRanking() {
     const msg = currentView === 'weekly'
       ? 'Ninguém enviou nada nesta semana ainda. Seja o primeiro do torneio!'
       : 'Seja o primeiro a enviar seu MooScore' + (currentView === 'global' ? '.' : ' nesta categoria.');
-    tbody.innerHTML = `<tr><td colspan="8">
+    tbody.innerHTML = `<tr><td colspan="7">
       <div class="empty-state">
         <div style="font-size:2.5rem;margin-bottom:10px;">🐮</div>
         <div><strong>Nenhuma pontuação ainda!</strong></div>
@@ -700,7 +702,6 @@ function renderRanking() {
     const rank = i + 1;
     const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-    const plat = PLATFORMS[s.platform];
 
     return `<tr>
       <td class="rank ${rankClass}">${rankIcon}</td>
@@ -711,9 +712,6 @@ function renderRanking() {
         </div>
       </td>
       <td><span class="score">${formatNumber(s.score || 0)}</span></td>
-      <td class="hide-mobile">
-        ${plat ? `<span class="badge plat">${plat.icon} ${plat.label}</span>` : '—'}
-      </td>
       <td class="hide-mobile vacas-val">${s.vacas ?? '—'}</td>
       <td class="hide-mobile fps-val">${s.fps_medio != null ? Number(s.fps_medio).toFixed(1) : '—'}</td>
       <td class="hide-mobile">
@@ -756,7 +754,7 @@ function renderWeeklyBox() {
   }
 
   const wk = weekKey(new Date());
-  const players = loading ? 0 : bestPerPlayer(scores.filter(s => s.week === wk)).length;
+  const players = loading ? 0 : bestPerPlayer(scores.filter(s => catOf(s) === 'weekly' && s.week === wk)).length;
 
   const msLeft = Math.max(0, currentWeekEnd().getTime() - Date.now());
   const d = Math.floor(msLeft / DAY_MS);
@@ -777,7 +775,7 @@ function renderWeeklyBox() {
     </div>
     <div class="weekly-rule">
       ${status}<br>
-      Começa no domingo e fecha no sábado (horário de Brasília). No fim, se teve 2 ou mais jogadores, o torneio é válido e vai pro histórico. Vale a melhor pontuação de cada jogador.
+      Começa no domingo e fecha no sábado (horário de Brasília). No fim, se teve 2 ou mais jogadores, o torneio é válido e vai pro histórico. Só vale o que for enviado com esta aba aberta, e conta a melhor pontuação de cada jogador.
     </div>`;
   box.classList.add('show');
 }
@@ -827,36 +825,36 @@ document.getElementById('tabs').addEventListener('click', e => {
   if (!btn) return;
   currentView = btn.dataset.view;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+  updateUploadTarget();
   renderAll();
 });
 
 /* ============================================================
    UPLOAD / PARSING
    ============================================================ */
+function updateUploadTarget() {
+  const c = CATEGORIES[currentView];
+  document.getElementById('uploadTarget').textContent = `Enviando para: ${c.icon} ${c.label}`;
+}
+updateUploadTarget();
+
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadStatus = document.getElementById('uploadStatus');
 const nameInput = document.getElementById('playerName');
-const platformSelect = document.getElementById('platformSelect');
 
 // Restaura nome e plataforma salvos anteriormente
 try {
   const savedName = localStorage.getItem('benchmoo_player_name');
   if (savedName) nameInput.value = savedName;
-  const savedPlat = localStorage.getItem('benchmoo_platform');
-  if (savedPlat && PLATFORMS[savedPlat]) platformSelect.value = savedPlat;
 } catch (e) { /* localStorage indisponível */ }
 
 nameInput.addEventListener('input', () => {
   try { localStorage.setItem('benchmoo_player_name', nameInput.value); } catch (e) {}
 });
 
-platformSelect.addEventListener('change', () => {
-  try { localStorage.setItem('benchmoo_platform', platformSelect.value); } catch (e) {}
-});
-
 uploadZone.addEventListener('click', (e) => {
-  // Cliques nos campos (nome / plataforma) não abrem o seletor de arquivos
+  // Cliques no campo de nome não abrem o seletor de arquivos
   if (e.target.closest('.name-field')) return;
   fileInput.click();
 });
@@ -891,7 +889,7 @@ async function handleFiles(files) {
     return;
   }
 
-  const platform = platformSelect.value;
+  const category = currentView;   // vai só pra categoria da aba aberta
   uploadStatus.textContent = '';
 
   for (const file of Array.from(files)) {
@@ -903,7 +901,7 @@ async function handleFiles(files) {
       const text = await file.text();
       const parsed = JSON.parse(text);
       uploadStatus.innerHTML = `<span style="color:var(--text-dim)">⏳ Processando ${escapeHtml(file.name)}...</span>`;
-      const entry = parseBenchMooFile(parsed, playerName, platform);
+      const entry = parseBenchMooFile(parsed, playerName, category);
       await submitScore(entry, file.name);
     } catch (err) {
       console.error(err);
@@ -916,7 +914,7 @@ async function handleFiles(files) {
 /* ============================================================
    PARSER DO BENCHMOO
    ============================================================ */
-function parseBenchMooFile(data, playerName, platform) {
+function parseBenchMooFile(data, playerName, category) {
   if (!data || typeof data !== 'object') {
     throw new Error('Formato inválido');
   }
@@ -938,11 +936,13 @@ function parseBenchMooFile(data, playerName, platform) {
     cpu: data.cpu || '',
     gpu: data.gpu || '',
     ram: data.ram || '',
-    platform: PLATFORMS[platform] ? platform : 'desktop',   // categoria
-    week: weekKey(now),                                      // semana do torneio weekly
+    category: CATEGORIES[category] ? category : 'global',
     timestamp: now.toISOString(),
     raw: data
   };
+
+  // Só o Weekly precisa saber de qual semana é
+  if (entry.category === 'weekly') entry.week = weekKey(now);
 
   if (data.sistema) {
     entry.cpu = data.sistema.cpu || entry.cpu;
@@ -969,8 +969,8 @@ async function submitScore(entry, filename) {
 
     await saveData(data);
 
-    const plat = PLATFORMS[entry.platform];
-    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado como <strong>${escapeHtml(entry.name)}</strong> (${plat.icon} ${plat.label})! MooScore: ${formatNumber(entry.score)} · já conta no Weekly 🏆</span>`;
+    const cat = CATEGORIES[entry.category];
+    uploadStatus.innerHTML = `<span style="color:var(--green)">✅ ${escapeHtml(filename)} enviado como <strong>${escapeHtml(entry.name)}</strong> em ${cat.icon} ${cat.label}! MooScore: ${formatNumber(entry.score)}</span>`;
     toast('🐮 Pontuação enviada com sucesso!', 'success');
 
     await loadScores();
